@@ -35,6 +35,26 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/bgp/peers": {
+      "get": {
+        "description": "Retrieves current operational state of peers for given BGP instance\ninitiated by BGP Control Plane. This includes session state, uptime,\ninformation per address family, etc.\n",
+        "tags": [
+          "bgp"
+        ],
+        "summary": "Lists operational state of BGP peers",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BgpPeer"
+              }
+            }
+          }
+        }
+      }
+    },
     "/cgroup-dump-metadata": {
       "get": {
         "tags": [
@@ -1713,6 +1733,71 @@ func init() {
         "enabled": {
           "description": "Is bandwidth manager enabled",
           "type": "boolean"
+        }
+      }
+    },
+    "BgpPeer": {
+      "description": "State of a BGP Peer\n\n+k8s:deepcopy-gen=true",
+      "properties": {
+        "admin-state": {
+          "description": "BGP peer configured administrative state",
+          "type": "string"
+        },
+        "afi-safi": {
+          "description": "BGP AFI SAFI state",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BgpPeerAfiSafi"
+          }
+        },
+        "local-asn": {
+          "description": "Local AS Number",
+          "type": "integer"
+        },
+        "peer-address": {
+          "description": "IP Address of peer",
+          "type": "string"
+        },
+        "peer-asn": {
+          "description": "Peer AS Number",
+          "type": "integer"
+        },
+        "session-state": {
+          "description": "BGP operational state as described here\nhttps://www.rfc-editor.org/rfc/rfc4271#section-8.2.2\n",
+          "type": "string"
+        },
+        "uptime": {
+          "description": "BGP connection uptime.",
+          "type": "string"
+        }
+      }
+    },
+    "BgpPeerAfiSafi": {
+      "description": "BGP AFI SAFI state of the peer\n\n+k8s:deepcopy-gen=true",
+      "properties": {
+        "accepted": {
+          "description": "Number of routes accepted from the peer of this address family",
+          "type": "integer"
+        },
+        "advertised": {
+          "description": "Number of routes advertised of this address family to the peer",
+          "type": "integer"
+        },
+        "afi": {
+          "description": "BGP address family indicator",
+          "type": "string"
+        },
+        "enabled": {
+          "description": "Administrative status of address family",
+          "type": "boolean"
+        },
+        "received": {
+          "description": "Number of routes received from the peer of this address family",
+          "type": "integer"
+        },
+        "safi": {
+          "description": "BGP subsequent address family indicator",
+          "type": "string"
         }
       }
     },
@@ -4600,6 +4685,26 @@ func init() {
   },
   "basePath": "/v1",
   "paths": {
+    "/bgp/peers": {
+      "get": {
+        "description": "Retrieves current operational state of peers for given BGP instance\ninitiated by BGP Control Plane. This includes session state, uptime,\ninformation per address family, etc.\n",
+        "tags": [
+          "bgp"
+        ],
+        "summary": "Lists operational state of BGP peers",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BgpPeer"
+              }
+            }
+          }
+        }
+      }
+    },
     "/cgroup-dump-metadata": {
       "get": {
         "tags": [
@@ -6461,6 +6566,71 @@ func init() {
         "enabled": {
           "description": "Is bandwidth manager enabled",
           "type": "boolean"
+        }
+      }
+    },
+    "BgpPeer": {
+      "description": "State of a BGP Peer\n\n+k8s:deepcopy-gen=true",
+      "properties": {
+        "admin-state": {
+          "description": "BGP peer configured administrative state",
+          "type": "string"
+        },
+        "afi-safi": {
+          "description": "BGP AFI SAFI state",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BgpPeerAfiSafi"
+          }
+        },
+        "local-asn": {
+          "description": "Local AS Number",
+          "type": "integer"
+        },
+        "peer-address": {
+          "description": "IP Address of peer",
+          "type": "string"
+        },
+        "peer-asn": {
+          "description": "Peer AS Number",
+          "type": "integer"
+        },
+        "session-state": {
+          "description": "BGP operational state as described here\nhttps://www.rfc-editor.org/rfc/rfc4271#section-8.2.2\n",
+          "type": "string"
+        },
+        "uptime": {
+          "description": "BGP connection uptime.",
+          "type": "string"
+        }
+      }
+    },
+    "BgpPeerAfiSafi": {
+      "description": "BGP AFI SAFI state of the peer\n\n+k8s:deepcopy-gen=true",
+      "properties": {
+        "accepted": {
+          "description": "Number of routes accepted from the peer of this address family",
+          "type": "integer"
+        },
+        "advertised": {
+          "description": "Number of routes advertised of this address family to the peer",
+          "type": "integer"
+        },
+        "afi": {
+          "description": "BGP address family indicator",
+          "type": "string"
+        },
+        "enabled": {
+          "description": "Administrative status of address family",
+          "type": "boolean"
+        },
+        "received": {
+          "description": "Number of routes received from the peer of this address family",
+          "type": "integer"
+        },
+        "safi": {
+          "description": "BGP subsequent address family indicator",
+          "type": "string"
         }
       }
     },
