@@ -67,6 +67,32 @@ type ServerParameters struct {
 	Global BGPGlobal
 }
 
+// Family is the address family
+type Family struct {
+	Afi  Afi
+	Safi Safi
+}
+
+// TableType is the type of the routing table
+type TableType int
+
+const (
+	TableTypeGlobal TableType = iota
+	TableTypeAdjRIBIn
+	TableTypeAdjRIBOut
+)
+
+// GetPrefixesRequest is the request to get prefixes from the routing table
+type GetPrefixesRequest struct {
+	TableType TableType
+	Family    Family
+	Name      string // Name is neighbor address to get per neighbor adj rib or VRF name in case of VRF table
+}
+
+type GetPrefixesResponse struct {
+	Prefixes []Prefix
+}
+
 // Router is vendor-agnostic cilium bgp configuration layer. Parameters of this layer
 // are standard BGP RFC complaint and not specific to any underlying implementation.
 type Router interface {
@@ -92,4 +118,7 @@ type Router interface {
 
 	// GetBGP returns configured BGP global parameters
 	GetBGP(ctx context.Context) (GetBGPResponse, error)
+
+	// GetPrefixes returns prefixes from the routing table
+	GetPrefixes(ctx context.Context, r GetPrefixesRequest) (GetPrefixesResponse, error)
 }

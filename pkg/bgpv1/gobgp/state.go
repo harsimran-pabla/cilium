@@ -124,99 +124,27 @@ func (g *GoBGPServer) GetPeerState(ctx context.Context) (types.GetPeerStateRespo
 	}, nil
 }
 
-// toAgentAfiSafiState translates gobgp structures to cilium bgp models.
-func toAgentAfiSafiState(state *gobgp.AfiSafiState) *models.BgpPeerFamilies {
-	res := &models.BgpPeerFamilies{}
+// GetPrefixes invokes GoBGP ListPath to get current paths from BGP routing tables. It can be filtered
+// by table type, family and neighbor address.
+func (g *GoBGPServer) GetPrefixes(ctx context.Context, r types.GetPrefixesRequest) (types.GetPrefixesResponse, error) {
+	var destinations []types.Prefix
 
-	if state.Family != nil {
-		res.Afi = toAgentAfi(state.Family.Afi).String()
-		res.Safi = toAgentSafi(state.Family.Safi).String()
+	fn := func(destination *gobgp.Destination) {
+		destinations = append(destinations, types.Prefix{
+			Prefix: destination.Prefix,
+			Paths:  toAgentPaths(destination.Paths),
+		})
 	}
 
-	res.Received = int64(state.Received)
-	res.Accepted = int64(state.Accepted)
-	res.Advertised = int64(state.Advertised)
-
-	return res
-}
-
-// toAgentSessionState translates gobgp session state to cilium bgp session state.
-func toAgentSessionState(s gobgp.PeerState_SessionState) types.SessionState {
-	switch s {
-	case gobgp.PeerState_UNKNOWN:
-		return types.SessionUnknown
-	case gobgp.PeerState_IDLE:
-		return types.SessionIdle
-	case gobgp.PeerState_CONNECT:
-		return types.SessionConnect
-	case gobgp.PeerState_ACTIVE:
-		return types.SessionActive
-	case gobgp.PeerState_OPENSENT:
-		return types.SessionOpenSent
-	case gobgp.PeerState_OPENCONFIRM:
-		return types.SessionOpenConfirm
-	case gobgp.PeerState_ESTABLISHED:
-		return types.SessionEstablished
-	default:
-		return types.SessionUnknown
+	if err := g.server.ListPath(ctx, &gobgp.ListPathRequest{
+		TableType: toGoBGPTableType(r.TableType),
+		Family:    toGoBGPFamily(r.Family),
+		Name:      r.Name,
+	}, fn); err != nil {
+		return types.GetPrefixesResponse{}, err
 	}
-}
 
-// toAgentAfi translates gobgp AFI to cilium bgp AFI.
-func toAgentAfi(a gobgp.Family_Afi) types.Afi {
-	switch a {
-	case gobgp.Family_AFI_UNKNOWN:
-		return types.AfiUnknown
-	case gobgp.Family_AFI_IP:
-		return types.AfiIPv4
-	case gobgp.Family_AFI_IP6:
-		return types.AfiIPv6
-	case gobgp.Family_AFI_L2VPN:
-		return types.AfiL2VPN
-	case gobgp.Family_AFI_LS:
-		return types.AfiLS
-	case gobgp.Family_AFI_OPAQUE:
-		return types.AfiOpaque
-	default:
-		return types.AfiUnknown
-	}
-}
-
-func toAgentSafi(s gobgp.Family_Safi) types.Safi {
-	switch s {
-	case gobgp.Family_SAFI_UNKNOWN:
-		return types.SafiUnknown
-	case gobgp.Family_SAFI_UNICAST:
-		return types.SafiUnicast
-	case gobgp.Family_SAFI_MULTICAST:
-		return types.SafiMulticast
-	case gobgp.Family_SAFI_MPLS_LABEL:
-		return types.SafiMplsLabel
-	case gobgp.Family_SAFI_ENCAPSULATION:
-		return types.SafiEncapsulation
-	case gobgp.Family_SAFI_VPLS:
-		return types.SafiVpls
-	case gobgp.Family_SAFI_EVPN:
-		return types.SafiEvpn
-	case gobgp.Family_SAFI_LS:
-		return types.SafiLs
-	case gobgp.Family_SAFI_SR_POLICY:
-		return types.SafiSrPolicy
-	case gobgp.Family_SAFI_MUP:
-		return types.SafiMup
-	case gobgp.Family_SAFI_MPLS_VPN:
-		return types.SafiMplsVpn
-	case gobgp.Family_SAFI_MPLS_VPN_MULTICAST:
-		return types.SafiMplsVpnMulticast
-	case gobgp.Family_SAFI_ROUTE_TARGET_CONSTRAINTS:
-		return types.SafiRouteTargetConstraints
-	case gobgp.Family_SAFI_FLOW_SPEC_UNICAST:
-		return types.SafiFlowSpecUnicast
-	case gobgp.Family_SAFI_FLOW_SPEC_VPN:
-		return types.SafiFlowSpecVpn
-	case gobgp.Family_SAFI_KEY_VALUE:
-		return types.SafiKeyValue
-	default:
-		return types.SafiUnknown
-	}
+	return types.GetPrefixesResponse{
+		Prefixes: destinations,
+	}, nil
 }
