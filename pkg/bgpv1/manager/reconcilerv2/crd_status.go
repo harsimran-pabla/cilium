@@ -28,16 +28,13 @@ import (
 	"github.com/cilium/cilium/pkg/time"
 )
 
-const (
-	CRDStatusUpdateInterval = 5 * time.Second
-)
-
 type StatusReconciler struct {
 	lock.Mutex
 
 	Logger            logrus.FieldLogger
 	ClientSet         k8s_client.Clientset
 	LocalNodeResource daemon_k8s.LocalCiliumNodeResource
+	UpdateInterval    time.Duration
 
 	nodeName      string
 	desiredStatus *v2alpha1.CiliumBGPNodeStatus
@@ -47,6 +44,7 @@ type StatusReconciler struct {
 type StatusReconcilerIn struct {
 	cell.In
 
+	Config    types.BGPConfig
 	Job       job.Group
 	ClientSet k8s_client.Clientset
 	Logger    logrus.FieldLogger
@@ -69,6 +67,7 @@ func NewStatusReconciler(in StatusReconcilerIn) StatusReconcilerOut {
 		Logger:            in.Logger.WithField(types.ReconcilerLogField, "CRD_Status"),
 		LocalNodeResource: in.LocalNode,
 		ClientSet:         in.ClientSet,
+		UpdateInterval:    in.Config.StatusUpdateInterval,
 		desiredStatus:     &v2alpha1.CiliumBGPNodeStatus{},
 		runningStatus:     &v2alpha1.CiliumBGPNodeStatus{},
 	}
@@ -89,9 +88,9 @@ func NewStatusReconciler(in StatusReconcilerIn) StatusReconcilerOut {
 	}))
 
 	in.Job.Add(job.OneShot("bgp-crd-status-update-job", func(ctx context.Context, health cell.Health) (err error) {
-		r.Logger.Debug("Update job running")
+		r.Logger.WithField("update_interval", r.UpdateInterval).Debug("Update job running")
 
-		ticker := time.NewTicker(CRDStatusUpdateInterval)
+		ticker := time.NewTicker(r.UpdateInterval)
 		defer ticker.Stop()
 
 		for {
@@ -242,7 +241,7 @@ func (r *StatusReconciler) getInstanceStatus(ctx context.Context, instance *inst
 
 func (r *StatusReconciler) reconcileWithRetry(ctx context.Context) error {
 	bo := wait.Backoff{
-		Duration: CRDStatusUpdateInterval,
+		Duration: r.UpdateInterval,
 		Factor:   1.2,
 		Jitter:   0.5,
 		Steps:    10,

@@ -15,6 +15,7 @@ import (
 	"github.com/cilium/cilium/pkg/bgpv1/manager/reconcilerv2"
 	"github.com/cilium/cilium/pkg/bgpv1/manager/store"
 	"github.com/cilium/cilium/pkg/bgpv1/metrics"
+	"github.com/cilium/cilium/pkg/bgpv1/types"
 	ipam_option "github.com/cilium/cilium/pkg/ipam/option"
 	"github.com/cilium/cilium/pkg/k8s"
 	v2alpha1api "github.com/cilium/cilium/pkg/k8s/apis/cilium.io/v2alpha1"
@@ -91,6 +92,9 @@ var Cell = cell.Module(
 
 	// BGP state reconcilers
 	reconcilerv2.StateReconcilers,
+
+	// BGP config
+	cell.Config(types.BGPConfig{}),
 
 	cell.Invoke(
 		// Invoke bgp controller to trigger the constructor.

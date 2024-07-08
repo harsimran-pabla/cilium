@@ -403,6 +403,8 @@ bgp:
 bgpControlPlane:
   # -- Enables the BGP control plane.
   enabled: false
+  # -- Update interval of BGP status in CiliumBGPNodeConfig resource
+  statusUpdateInterval: 5s
   # -- SecretsNamespace is the namespace which BGP support will retrieve secrets from.
   secretsNamespace:
     # -- Create secrets namespace for BGP secrets.

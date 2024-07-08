@@ -26,6 +26,7 @@ cilium-agent [flags]
       --bgp-announce-lb-ip                                        Announces service IPs of type LoadBalancer via BGP
       --bgp-announce-pod-cidr                                     Announces the node's pod CIDR via BGP
       --bgp-config-path string                                    Path to file containing the BGP configuration (default "/var/lib/cilium/bgp/config.yaml")
+      --bgp-status-update-interval duration                       Interval to update BGP status in the CiliumBGPNodeConfig CRD (default 5s)
       --bpf-auth-map-max int                                      Maximum number of entries in auth map (default 524288)
       --bpf-ct-global-any-max int                                 Maximum number of entries in non-TCP CT table (default 262144)
       --bpf-ct-global-tcp-max int                                 Maximum number of entries in TCP CT table (default 524288)

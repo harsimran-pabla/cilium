@@ -485,6 +485,9 @@
             }
           },
           "type": "object"
+        },
+        "statusUpdateInterval": {
+          "type": "string"
         }
       },
       "type": "object"
